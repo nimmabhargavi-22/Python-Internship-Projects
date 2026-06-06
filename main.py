@@ -1,122 +1,136 @@
-import random
-import string
+import csv
 
 
-def generate_password(length):
+def read_employees():
+    employees = []
 
-    characters = (
-        string.ascii_lowercase +
-        string.ascii_uppercase +
-        string.digits +
-        string.punctuation
+    try:
+        with open("employees.csv", "r") as file:
+            reader = csv.DictReader(file)
+
+            for row in reader:
+                employees.append(row)
+
+    except FileNotFoundError:
+        print("Error: employees.csv file not found")
+
+    except PermissionError:
+        print("Error: Permission denied")
+
+    return employees
+
+
+def display_employees(employees):
+
+    print("\n========== EMPLOYEE RECORDS ==========")
+
+    if len(employees) == 0:
+        print("No Records Found")
+        return
+
+    for emp in employees:
+
+        print(f"ID         : {emp['ID']}")
+        print(f"Name       : {emp['Name']}")
+        print(f"Department : {emp['Department']}")
+        print(f"Salary     : {emp['Salary']}")
+        print("-" * 40)
+
+
+def filter_it_employees(employees):
+
+    print("\n========== IT EMPLOYEES ==========")
+
+    found = False
+
+    for emp in employees:
+
+        if emp["Department"].strip().upper() == "IT":
+
+            print(
+                f"{emp['Name']} - ₹{emp['Salary']}"
+            )
+
+            found = True
+
+    if not found:
+        print("No IT Employees Found")
+
+
+def sort_by_salary(employees):
+
+    print("\n========== SORTED BY SALARY ==========")
+
+    sorted_employees = sorted(
+        employees,
+        key=lambda x: int(x["Salary"]),
+        reverse=True
     )
 
-    password = ""
+    for emp in sorted_employees:
 
-    for i in range(length):
-        password += random.choice(characters)
-
-    return password
-
-
-def check_strength(password):
-
-    has_upper = False
-    has_lower = False
-    has_digit = False
-    has_special = False
-
-    for char in password:
-
-        if char.isupper():
-            has_upper = True
-
-        elif char.islower():
-            has_lower = True
-
-        elif char.isdigit():
-            has_digit = True
-
-        else:
-            has_special = True
-
-    score = 0
-
-    if has_upper:
-        score += 1
-
-    if has_lower:
-        score += 1
-
-    if has_digit:
-        score += 1
-
-    if has_special:
-        score += 1
-
-    if len(password) >= 8:
-        score += 1
-
-    if score <= 2:
-        return "Weak"
-
-    elif score <= 4:
-        return "Medium"
-
-    else:
-        return "Strong"
+        print(
+            f"{emp['Name']} - ₹{emp['Salary']}"
+        )
 
 
-def save_password(password):
+def generate_report(employees):
 
-    with open("passwords.txt", "a") as file:
-        file.write(password + "\n")
+    total_salary = 0
 
+    for emp in employees:
+        total_salary += int(emp["Salary"])
+
+    average_salary = total_salary / len(employees)
+
+    with open("report.txt", "w") as file:
+
+        file.write("EMPLOYEE REPORT\n")
+        file.write("========================\n")
+        file.write(
+            f"Total Employees : {len(employees)}\n"
+        )
+        file.write(
+            f"Total Salary : {total_salary}\n"
+        )
+        file.write(
+            f"Average Salary : {average_salary}\n"
+        )
+
+    print("\nReport Generated Successfully")
+    print("report.txt created")
+
+
+employees = read_employees()
 
 while True:
 
-    print("\n===================================")
-    print(" PASSWORD GENERATOR ")
-    print("===================================")
-    print("1. Generate Password")
-    print("2. Check Password Strength")
-    print("3. Exit")
+    print("\n========== FILE HANDLING SYSTEM ==========")
+    print("1. Display Employees")
+    print("2. Filter IT Employees")
+    print("3. Sort By Salary")
+    print("4. Generate Report")
+    print("5. Exit")
 
     choice = input("Enter Choice: ")
 
     if choice == "1":
 
-        try:
-            length = int(input("Enter Password Length: "))
-
-            if length < 4:
-                print("Password length should be at least 4")
-                continue
-
-            password = generate_password(length)
-
-            print("\nGenerated Password:", password)
-
-            strength = check_strength(password)
-
-            print("Password Strength:", strength)
-
-            save_password(password)
-
-            print("Password Saved Successfully")
-
-        except ValueError:
-            print("Please Enter Numbers Only")
+        display_employees(employees)
 
     elif choice == "2":
 
-        password = input("Enter Password: ")
-
-        strength = check_strength(password)
-
-        print("Password Strength:", strength)
+        filter_it_employees(employees)
 
     elif choice == "3":
+
+        sort_by_salary(employees)
+
+    elif choice == "4":
+
+        generate_report(employees)
+
+    elif choice == "5":
 
         print("Thank You")
         break
