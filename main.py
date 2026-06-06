@@ -1,148 +1,126 @@
-import json
-import os
-
-FILE_NAME = "students.json"
+import random
+import string
 
 
-def load_students():
-    if os.path.exists(FILE_NAME):
-        with open(FILE_NAME, "r") as file:
-            return json.load(file)
-    return []
+def generate_password(length):
+
+    characters = (
+        string.ascii_lowercase +
+        string.ascii_uppercase +
+        string.digits +
+        string.punctuation
+    )
+
+    password = ""
+
+    for i in range(length):
+        password += random.choice(characters)
+
+    return password
 
 
-def save_students(students):
-    with open(FILE_NAME, "w") as file:
-        json.dump(students, file, indent=4)
+def check_strength(password):
+
+    has_upper = False
+    has_lower = False
+    has_digit = False
+    has_special = False
+
+    for char in password:
+
+        if char.isupper():
+            has_upper = True
+
+        elif char.islower():
+            has_lower = True
+
+        elif char.isdigit():
+            has_digit = True
+
+        else:
+            has_special = True
+
+    score = 0
+
+    if has_upper:
+        score += 1
+
+    if has_lower:
+        score += 1
+
+    if has_digit:
+        score += 1
+
+    if has_special:
+        score += 1
+
+    if len(password) >= 8:
+        score += 1
+
+    if score <= 2:
+        return "Weak"
+
+    elif score <= 4:
+        return "Medium"
+
+    else:
+        return "Strong"
 
 
-def add_student(students):
-    sid = input("Enter Student ID: ")
+def save_password(password):
 
-    for student in students:
-        if student["id"] == sid:
-            print("Student ID Already Exists!")
-            return
+    with open("passwords.txt", "a") as file:
+        file.write(password + "\n")
 
-    name = input("Enter Name: ")
-    age = int(input("Enter Age: "))
-    course = input("Enter Course: ")
-    marks = float(input("Enter Marks: "))
-
-    students.append({
-        "id": sid,
-        "name": name,
-        "age": age,
-        "course": course,
-        "marks": marks
-    })
-
-    save_students(students)
-    print("Student Added Successfully")
-
-
-def view_students(students):
-    if len(students) == 0:
-        print("No Records Found")
-        return
-
-    print("\n------------------------------------------------")
-    print("ID\tNAME\tAGE\tCOURSE\tMARKS")
-    print("------------------------------------------------")
-
-    for student in students:
-        print(
-            f"{student['id']}\t"
-            f"{student['name']}\t"
-            f"{student['age']}\t"
-            f"{student['course']}\t"
-            f"{student['marks']}"
-        )
-
-
-def search_student(students):
-    sid = input("Enter Student ID: ")
-
-    for student in students:
-        if student["id"] == sid:
-            print("\nStudent Found")
-            print("ID :", student["id"])
-            print("Name :", student["name"])
-            print("Age :", student["age"])
-            print("Course :", student["course"])
-            print("Marks :", student["marks"])
-            return
-
-    print("Student Not Found")
-
-
-def update_student(students):
-    sid = input("Enter Student ID: ")
-
-    for student in students:
-        if student["id"] == sid:
-
-            student["name"] = input("New Name: ")
-            student["age"] = int(input("New Age: "))
-            student["course"] = input("New Course: ")
-            student["marks"] = float(input("New Marks: "))
-
-            save_students(students)
-
-            print("Student Updated Successfully")
-            return
-
-    print("Student Not Found")
-
-
-def delete_student(students):
-    sid = input("Enter Student ID: ")
-
-    for student in students:
-        if student["id"] == sid:
-            students.remove(student)
-
-            save_students(students)
-
-            print("Student Deleted Successfully")
-            return
-
-    print("Student Not Found")
-
-
-students = load_students()
 
 while True:
 
-    print("\n========== STUDENT MANAGEMENT SYSTEM ==========")
-    print("1. Add Student")
-    print("2. View Students")
-    print("3. Search Student")
-    print("4. Update Student")
-    print("5. Delete Student")
-    print("6. Exit")
+    print("\n===================================")
+    print(" PASSWORD GENERATOR ")
+    print("===================================")
+    print("1. Generate Password")
+    print("2. Check Password Strength")
+    print("3. Exit")
 
     choice = input("Enter Choice: ")
 
     if choice == "1":
-        add_student(students)
+
+        try:
+            length = int(input("Enter Password Length: "))
+
+            if length < 4:
+                print("Password length should be at least 4")
+                continue
+
+            password = generate_password(length)
+
+            print("\nGenerated Password:", password)
+
+            strength = check_strength(password)
+
+            print("Password Strength:", strength)
+
+            save_password(password)
+
+            print("Password Saved Successfully")
+
+        except ValueError:
+            print("Please Enter Numbers Only")
 
     elif choice == "2":
-        view_students(students)
+
+        password = input("Enter Password: ")
+
+        strength = check_strength(password)
+
+        print("Password Strength:", strength)
 
     elif choice == "3":
-        search_student(students)
 
-    elif choice == "4":
-        update_student(students)
-
-    elif choice == "5":
-        delete_student(students)
-
-    elif choice == "6":
         print("Thank You")
         break
 
     else:
+
         print("Invalid Choice")
-        
